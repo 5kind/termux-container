@@ -1,11 +1,11 @@
-<h1 align="center">Magisk Module Template Extended (MMT-Ex)</h1>
+<h1 align="center">Termux Container Service</h1>
 
 <div align="center">
   <!-- Version -->
-    <img src="https://img.shields.io/badge/Version-v3.5-blue.svg?longCache=true&style=popout-square"
+    <img src="https://img.shields.io/badge/Version-v1.0-blue.svg?longCache=true&style=popout-square"
       alt="Version" />
   <!-- Last Updated -->
-    <img src="https://img.shields.io/badge/Updated-September 11, 2023-green.svg?longCache=true&style=flat-square"
+    <img src="https://img.shields.io/badge/Updated-2023.12.15-green.svg?longCache=true&style=flat-square"
       alt="_time_stamp_" />
   <!-- Min Magisk -->
     <img src="https://img.shields.io/badge/MinMagisk-20.4-red.svg?longCache=true&style=flat-square"
@@ -15,26 +15,23 @@
       alt="_time_stamp_" /></div>
 
 <div align="center">
-  <strong>MMT Extended is the spiritual successor of Unity and makes magisk module creation easy. Instructions in the 
-    <h3><a href="https://github.com/Zackptg5/MMT-Extended/wiki">Wiki</a></h3><h4>Also supports KSU</h4>
+  <strong>Mount Cgroup and Run Termux LXC & Docker 
+  <h4>Also supports KSU</h4>
 </div>
 
 <div align="center">
   <h3>
-    <a href="https://github.com/Zackptg5/MMT-Extended">
+    <a href="https://github.com/5kind/termux-contaner">
       Source Code
-    </a>
-    <span> | </span>
-    <a href="https://github.com/Zackptg5/MMT-Extended-Addons">
-      Addons Repository
-    </a>
-    <span> | </span>
-    <a href="https://forum.xda-developers.com/apps/magisk/magisk-module-template-extended-mmt-ex-t4029819">
-      XDA
     </a>
   </h3>
 </div>
 
 ### Usage
-- [Follow the directions here (DO NOT FORK)](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template)
-- Then follow instructions in [Wiki](https://github.com/Zackptg5/MMT-Extended/wiki)
+- Flash a kernel that support lxc & docker.
+- Install lxc & docker in termux app.
+- Set your lxc container config `lxc.start.auto = 1`.
+- Lxc-autostart & dockerd will start automatically.
+
+### Notice
+- There is a known problem that the latest (1.6.21-2) containerd don't work, see [issue](https://github.com/termux/termux-packages/issues/18359).
