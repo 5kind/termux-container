@@ -1,0 +1,6 @@
+{
+    "version": "v1.1",
+    "versionCode": 1,
+    "zipUrl": "https://raw.githubusercontent.com/5kind/termux-container/master/install.zip",
+    "changelog": "https://raw.githubusercontent.com/5kind/termux-container/master/changelog.md"
+  }
