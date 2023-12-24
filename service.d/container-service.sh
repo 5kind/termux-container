@@ -23,6 +23,7 @@ ensure_exist $PREFIX
 mount_tmpfs $PREFIX/tmp
 mount_tmpfs $PREFIX/tmp/.X11-unix
 mount_tmpfs $PREFIX/var/run rw,nosuid,nodev,relatime,mode=755
+mount_tmpfs /data/docker/run rw,nosuid,nodev,relatime,mode=755
 
 # termux lxc autostart
 export HOME=/data/data/com.termux/files/home/.suroot
