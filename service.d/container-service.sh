@@ -26,9 +26,9 @@ mount_tmpfs $PREFIX/var/run rw,nosuid,nodev,relatime,mode=755
 
 # termux lxc autostart
 export HOME=/data/data/com.termux/files/home/.suroot
-[ -x /data/data/com.termux/files/usr/bin/lxc-autostart ] &&
-/data/data/com.termux/files/usr/bin/lxc-autostart
+[ -x $PREFIX/bin/lxc-autostart ] &&
+$PREFIX/bin/lxc-autostart
 # termux dockerd
 export PATH=$PATH:$PREFIX/bin
-[ -x /data/data/com.termux/files/usr/bin/dockerd ] &&
-exec /data/data/com.termux/files/usr/bin/dockerd
+[ -x $PREFIX/bin/dockerd ] &&
+exec $PREFIX/bin/dockerd
