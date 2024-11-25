@@ -36,14 +36,21 @@ ensure_exist() {
     done
 }
 
+clone_attr(){
+    # clone owner, selinux context
+    local src=$1
+    local dest=$2
+    chown -h $(stat -c "%U:%G" "$src") "$dest"
+    chcon -h --reference="$src" "$dest"
+}
+
 mount_tmpfs() {
     local dest="$1"
     local opts=${2:-"mode=1777,nosuid,nodev"}
 
     [ -d "$dest" ] || mkdir -p "$dest"
     mountpoint -q $(realpath "$dest") || mount tmpfs "$dest" -t tmpfs -o "$opts"
-    chcon --reference=$PREFIX $dest
-    chown $(stat -c "%U:%G" $PREFIX) $dest
+    clone_attr $PREFIX "$dest"
 }
 
 # main function
@@ -89,12 +96,27 @@ lxc_start() {
         $PREFIX/bin/lxc-autostart -l DEBUG
 }
 
+chown_docker_socket() {
+    # make docker socket accessible for termux
+    while [ ! -e $TERMUX_SOCK ]; do
+        sleep $SLEEP_TIME
+    done
+    clone_attr $PREFIX $TERMUX_SOCK
+    clone_attr $PREFIX $DOCKER_SOCK
+    echo "All services have been started."
+}
+
 docker_start() {
     # start docker service
     export PATH=$PATH:$PREFIX/bin
-    [ -x $PREFIX/libexec/dockerd ] &&
-        ln -s $(cat $PREFIX/etc/docker/daemon.json | grep -o 'unix://[^"]*' | sed 's#unix://##') $PREFIX/var/run/docker.sock &&
+    if [ -x $PREFIX/libexec/dockerd ]; then
+        export DOCKER_SOCK=$(cat $PREFIX/etc/docker/daemon.json |\
+        grep -o 'unix://[^"]*' | sed 's#unix://##')
+        export TERMUX_SOCK=$PREFIX/var/run/docker.sock
+        ln -s $DOCKER_SOCK $TERMUX_SOCK
+        chown_docker_socket &
         exec $PREFIX/libexec/dockerd
+    fi
 }
 
 main() {
@@ -103,8 +125,10 @@ main() {
     ensure_exist $PREFIX
     # start service
     echo "Setup cgroup & tmpfs ..."
-    setup_cgroup
-    setup_tmpfs
+    setup_cgroup &
+    setup_tmpfs &
+    wait
+    # start containers
     echo "Start lxc service ..."
     lxc_start
     echo "Start docker service ..."
