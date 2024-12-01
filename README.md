@@ -2,10 +2,10 @@
 
 <div align="center">
   <!-- Version -->
-    <img src="https://img.shields.io/badge/Version-v1.2-blue.svg?longCache=true&style=popout-square"
+    <img src="https://img.shields.io/badge/Version-v1.3-blue.svg?longCache=true&style=popout-square"
       alt="Version" />
   <!-- Last Updated -->
-    <img src="https://img.shields.io/badge/Updated-2024.11.25-green.svg?longCache=true&style=flat-square"
+    <img src="https://img.shields.io/badge/Updated-2024.12.01-green.svg?longCache=true&style=flat-square"
       alt="_time_stamp_" />
   <!-- Min Magisk -->
     <img src="https://img.shields.io/badge/MinMagisk-27.0-red.svg?longCache=true&style=flat-square"
@@ -32,3 +32,5 @@
 - Install lxc & docker in termux app.
 - Set your lxc container config `lxc.start.auto = 1`.
 - Lxc-autostart & dockerd will start automatically.
+- If you want the device to automatically decrypt /data partitions,
+modify PASSWORD in [locksettings-verify](./bin/locksettings-verify)

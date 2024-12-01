@@ -1,3 +1,6 @@
+### v1.3 - 2024.12.01
+* Allow use password to unlock devices by locksettings-verify.
+
 ### v1.2 - 2024.11.25
 * Refactor and improve the code structure
 
