@@ -33,4 +33,4 @@
 - Set your lxc container config `lxc.start.auto = 1`.
 - Lxc-autostart & dockerd will start automatically.
 - If you want the device to automatically decrypt /data partitions,
-modify PASSWORD in [locksettings-verify](./bin/locksettings-verify)
+modify PASSWORD in [/data/adb/service.d/locksettings-verify.sh](./service.d/locksettings-verify.sh) after install.

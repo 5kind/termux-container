@@ -1,3 +1,9 @@
+service_scripts="locksettings-verify.sh"
+global_service_d=/data/adb/service.d
+
+for service_script in "$service_scripts"; do
+  rm -f $global_service_d/$service_script
+done
 # Don't modify anything after this
 if [ -f $INFO ]; then
   while read LINE; do
