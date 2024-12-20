@@ -1,4 +1,4 @@
-service_scripts="locksettings-verify.sh start-docker.sh"
+service_scripts="locksettings-verify.sh start-docker.sh container-completed.sh"
 global_service_d=/data/adb/service.d
 
 for service_script in $service_scripts; do

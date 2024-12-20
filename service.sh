@@ -16,7 +16,10 @@ main() {
     # start service
     echo "Start Container Service ..."
     . start-lxc.sh
-    . start-docker.sh
+    . start-docker.sh &
+    echo "Container Service completed at $(uptime) ..."
+    echo "Start container-completed services ..."
+    . container-completed.sh &
 }
 
 main >>"$LOGFILE" 2>&1

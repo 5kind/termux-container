@@ -6,7 +6,7 @@ docker_start() {
     export PATH=$PATH:$PREFIX/bin
     [ -x $PREFIX/libexec/dockerd ] &&
         ln -s $(cat $PREFIX/etc/docker/daemon.json | grep -o 'unix://[^"]*' | sed 's#unix://##') $PREFIX/var/run/docker.sock &&
-        $EXEC_DOCKERD && exec $PREFIX/libexec/dockerd &
+        $EXEC_DOCKERD && exec $PREFIX/libexec/dockerd
 }
 
 docker_start

@@ -1,3 +1,7 @@
+### v1.4 - 2024.12.20
+* Allow customize docker service by start-docker.sh;
+* Auto Start/Stop Android system by container-completed.sh.
+
 ### v1.3 - 2024.12.01
 * Allow use password to unlock devices by locksettings-verify.
 
