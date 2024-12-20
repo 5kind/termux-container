@@ -1,8 +1,8 @@
-service_scripts="locksettings-verify.sh"
+service_scripts="locksettings-verify.sh start-docker.sh"
 global_service_d=/data/adb/service.d
 
-for service_script in "$service_scripts"; do
-  rm -f $global_service_d/$service_script
+for service_script in $service_scripts; do
+  rm -f "$global_service_d/$service_script"
 done
 # Don't modify anything after this
 if [ -f $INFO ]; then

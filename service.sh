@@ -15,7 +15,8 @@ main() {
     wait
     # start service
     echo "Start Container Service ..."
-    . container-service.sh
+    . start-lxc.sh
+    . start-docker.sh
 }
 
 main >>"$LOGFILE" 2>&1

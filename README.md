@@ -5,7 +5,7 @@
     <img src="https://img.shields.io/badge/Version-v1.3-blue.svg?longCache=true&style=popout-square"
       alt="Version" />
   <!-- Last Updated -->
-    <img src="https://img.shields.io/badge/Updated-2024.12.01-green.svg?longCache=true&style=flat-square"
+    <img src="https://img.shields.io/badge/Updated-2024.12.20-green.svg?longCache=true&style=flat-square"
       alt="_time_stamp_" />
   <!-- Min Magisk -->
     <img src="https://img.shields.io/badge/MinMagisk-27.0-red.svg?longCache=true&style=flat-square"
@@ -28,9 +28,12 @@
 </div>
 
 ### Usage
-- Flash a kernel that support lxc & docker.
-- Install lxc & docker in termux app.
-- Set your lxc container config `lxc.start.auto = 1`.
-- Lxc-autostart & dockerd will start automatically.
-- If you want the device to automatically decrypt /data partitions,
-modify PASSWORD in [/data/adb/service.d/locksettings-verify.sh](./service.d/locksettings-verify.sh) after install.
+1. Flash a kernel that support lxc & docker.
+2. Install lxc & docker in termux app.
+3. Set your lxc container config `lxc.start.auto = 1`.
+4. `lxc-autostart` & `dockerd` will start automatically.
+
+### Optional
+#### Modify scripts in the [/data/adb/service.d](./service.d) to customize the behavior of the service.
+1. Modify `PASSWORD` in [/data/adb/service.d/locksettings-verify.sh](./service.d/locksettings-verify.sh) to automatically decrypt /data partitions.
+2. Modify `SETUP_DOCKER EXEC_DOCKERD` in [/data/adb/service.d/start-docker.sh](./service.d/start-docker.sh) to customize the behavior of the docker service.
