@@ -18,7 +18,7 @@ main() {
     . start-lxc.sh
     . start-docker.sh &
     echo "Container Service completed at $(uptime) ..."
-    echo "Start container-completed services ..."
+    echo "Start container-completed service ..."
     . container-completed.sh &
 }
 

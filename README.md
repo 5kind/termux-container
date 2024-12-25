@@ -38,3 +38,4 @@
 1. Modify `PASSWORD` in [/data/adb/service.d/locksettings-verify.sh](./service.d/locksettings-verify.sh) to automatically decrypt /data partitions.
 2. Modify `SETUP_DOCKER EXEC_DOCKERD` in [/data/adb/service.d/start-docker.sh](./service.d/start-docker.sh) to customize the behavior of the docker service.
 3. Modify `NO_START_STOP` in [/data/adb/service.d/container-completed.sh](./service.d/container-completed.sh) to auto start/stop android system.
+4. Modify `NO_DOZE` in [/data/adb/service.d/container-completed.sh](./service.d/container-completed.sh) to disable doze mode.

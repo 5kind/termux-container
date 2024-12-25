@@ -1,3 +1,4 @@
+NO_DOZE=true        # No auto doze android
 NO_START_STOP=true  # No auto start/stop android
 SLEEP_TIME=600
 MAX_ATTEMPTS=4
@@ -33,3 +34,4 @@ while true; do
     start_stop_functions
     sleep "$SLEEP_TIME"
 done
+$NO_DOZE && dumpsys deviceidle disable
