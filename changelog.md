@@ -1,3 +1,9 @@
+### v1.5 - 2024.12.25
+* More customize options for service scripts;
+* start-lxc/docker -> start-container;
+* container-completed -> auto-start-stop/no-doze;
+* Better logs.
+
 ### v1.4 - 2024.12.20
 * Allow customize docker service by start-docker.sh;
 * Auto Start/Stop Android system by container-completed.sh.

@@ -2,10 +2,10 @@
 
 <div align="center">
   <!-- Version -->
-    <img src="https://img.shields.io/badge/Version-v1.3-blue.svg?longCache=true&style=popout-square"
+    <img src="https://img.shields.io/badge/Version-v1.5-blue.svg?longCache=true&style=popout-square"
       alt="Version" />
   <!-- Last Updated -->
-    <img src="https://img.shields.io/badge/Updated-2024.12.20-green.svg?longCache=true&style=flat-square"
+    <img src="https://img.shields.io/badge/Updated-2024.12.25-green.svg?longCache=true&style=flat-square"
       alt="_time_stamp_" />
   <!-- Min Magisk -->
     <img src="https://img.shields.io/badge/MinMagisk-27.0-red.svg?longCache=true&style=flat-square"
@@ -35,7 +35,7 @@
 
 ### Optional
 #### Modify scripts in the [/data/adb/service.d](./service.d) to customize the behavior of the service.
-1. Modify `PASSWORD` in [/data/adb/service.d/locksettings-verify.sh](./service.d/locksettings-verify.sh) to automatically decrypt /data partitions.
-2. Modify `SETUP_DOCKER EXEC_DOCKERD` in [/data/adb/service.d/start-docker.sh](./service.d/start-docker.sh) to customize the behavior of the docker service.
-3. Modify `NO_START_STOP` in [/data/adb/service.d/container-completed.sh](./service.d/container-completed.sh) to auto start/stop android system.
-4. Modify `NO_DOZE` in [/data/adb/service.d/container-completed.sh](./service.d/container-completed.sh) to disable doze mode.
+1. Modify `PASSWORD` in [/data/adb/service.d/locksettings-verify.sh](./service.d/locksettings-verify.sh) to automatically decrypt /data partitions;
+2. Modify `SETUP_DOCKER EXEC_DOCKERD` in [/data/adb/service.d/start-container.sh](./service.d/start-container.sh) to customize the behavior of the docker service;
+3. Modify `NO_START_STOP` in [/data/adb/service.d/auto-start-stop.sh](./service.d/auto-start-stop.sh) to auto start/stop android system;
+4. Copy & modify other scripts in `/data/adb/service.d` ./service.d)(copy from ./service.d by yourself) to customize the behavior of those service.

@@ -1,5 +1,4 @@
-NO_DOZE=true        # No auto doze android
-NO_START_STOP=true  # No auto start/stop android
+AUTO_START_STOP=false   # No auto start/stop android
 SLEEP_TIME=600
 MAX_ATTEMPTS=4
 ONLINE_WEBSITES="www.google.com
@@ -29,9 +28,8 @@ start_stop_by_netd() {
 }
 
 # main
-$NO_START_STOP ||
+$AUTO_START_STOP &&
 while true; do
     start_stop_functions
     sleep "$SLEEP_TIME"
 done
-$NO_DOZE && dumpsys deviceidle disable

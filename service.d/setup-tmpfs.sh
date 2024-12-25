@@ -1,16 +1,19 @@
+SETUP_TMPFS=true
+
 TERMUX_SOCKET=/dev/socket/termux
 
 clone_attr() {
     local src=$1
     local dest=$2
-    local opts=$3
+    shift 2
+    local opts=$@
     chcon --reference=$src $dest $opts
     chown $(stat -c "%U:%G" $src) $dest $opts
 }
 
 setup_tmpfs() {
     # setup tmpfs in /dev/socket/termux
-    mkdir -m 755 -p $TERMUX_SOCKET/run
+    mkdir -m 755 -p $TERMUX_SOCKET/run/dbus $TERMUX_SOCKET/run/user $TERMUX_SOCKET/run/lock
     mkdir -m 1777 $TERMUX_SOCKET/tmp $TERMUX_SOCKET/tmp/.X11-unix
     clone_attr $PREFIX $TERMUX_SOCKET -R
     # make those directories tmpfs
@@ -18,4 +21,5 @@ setup_tmpfs() {
     mount --bind $TERMUX_SOCKET/run $PREFIX/var/run
 }
 # main
+$SETUP_TMPFS &&
 setup_tmpfs

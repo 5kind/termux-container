@@ -1,4 +1,5 @@
-# cgroup function
+MOUNT_CGROUP_SYSTEMD=true
+
 ln_cg() {
     local src=$1
     local scg="/sys/fs/cgroup/${2}"
@@ -43,9 +44,8 @@ setup_cg() {
         mount_cg ${cg} ${cg}
     done
     # mount systemd cgroup
-    for cg in systemd; do
-        mount_cg ${cg} "none,nosuid,nodev,noexec,relatime,xattr,name=${cg}"
-    done
+    $MOUNT_CGROUP_SYSTEMD && 
+    mount_cg systemd "none,nosuid,nodev,noexec,relatime,xattr,name=systemd"
     # make cgroup read-only
     mount -o remount,ro /sys/fs/cgroup
 }

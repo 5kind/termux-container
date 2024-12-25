@@ -1,4 +1,4 @@
-service_scripts="locksettings-verify.sh start-docker.sh container-completed.sh"
+service_scripts="locksettings-verify.sh start-container.sh auto-start-stop.sh"
 global_service_d=/data/adb/service.d
 static_service_d="$MODPATH/service.d"
 
