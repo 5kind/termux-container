@@ -45,6 +45,7 @@ container_internet_access() {
         set_default_route $interface && break
     done
     ip rule add from all lookup main pref 30000
+    [ -x $PREFIX/libexec/lxc/lxc-net ] &&
     $PREFIX/libexec/lxc/lxc-net start
 }
 
