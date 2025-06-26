@@ -13,6 +13,7 @@ clone_attr() {
 
 setup_tmpfs() {
     # setup tmpfs in /dev/socket/termux
+    mkdir -p $TERMUX_SOCKET
     mkdir -m 1777 $TERMUX_SOCKET/tmp $TERMUX_SOCKET/tmp/.X11-unix
     mkdir -m 755 $TERMUX_SOCKET/run $TERMUX_SOCKET/run/dbus \
     $TERMUX_SOCKET/run/user $TERMUX_SOCKET/run/lock
