@@ -1,0 +1,112 @@
+name: Build Magisk Module
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'module.prop'
+  workflow_dispatch:
+      
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Set up the environment
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Validate version info
+      - name: Validate and Auto-Update update.json
+        id: update_json
+        run: |
+          echo "Validating versions and update.json..."
+          
+          # Get version info from module.prop
+          prop_version=$(grep 'version=' module.prop | sed 's/.*=//')
+          prop_version_code=$(grep 'versionCode=' module.prop | sed 's/.*=//')
+          echo "module.prop: version=${prop_version}, versionCode=${prop_version_code}"
+
+          # Set version and versionCode as environment variables for release creation
+          echo "module_version=${prop_version}" >> $GITHUB_ENV
+
+          # Get version info from update.json, requring jq
+          json_version=$(jq -r '.version' update.json)
+          json_version_code=$(jq -r '.versionCode' update.json)
+          json_zip_url=$(jq -r '.zipUrl' update.json)
+          echo "Current update.json: version=${json_version}, versionCode=${json_version_code}"
+
+          # Core logic for version comparison
+          # 1. Check if the version in update.json is newer than the one in module.prop
+          if (( json_version_code > prop_version_code )); then
+            echo "::error::Downgrade detected! The versionCode in update.json (${json_version_code}) is newer than in module.prop (${prop_version_code})."
+            echo "::error::Please increment the version in module.prop before proceeding."
+            exit 1
+          fi
+
+          # 2. Check if the version or Url needs to be updated
+          expected_zip_url="https://github.com/${{ github.repository }}/releases/download/${prop_version}/install.zip"
+          #   - If the version info or URL is different, update update.json
+          if [ "$prop_version" != "$json_version" ] || [ "$prop_version_code" != "$json_version_code" ] || [ "$expected_zip_url" != "$json_zip_url" ]; then
+            echo "Mismatched data detected. Automatically updating update.json..."
+
+            jq \
+              --arg ver "$prop_version" \
+              --argjson code "$prop_version_code" \
+              --arg url "$expected_zip_url" \
+              '.version = $ver | .versionCode = $code | .zipUrl = $url' \
+              update.json > update.json.tmp && mv update.json.tmp update.json
+
+            echo "update.json has been updated to version ${prop_version}."
+            echo "NEEDS_COMMIT=true" >> $GITHUB_ENV
+          else
+            echo "Version validation passed. update.json is already up to date."
+          fi
+      
+      # Step 2.5: commit changes to update.json if needed
+      - name: Commit and Push update.json Changes
+        # Only run this step when NEEDS_COMMIT is set by the previous step
+        if: env.NEEDS_COMMIT == 'true'
+        run: |
+          echo "Committing changes in update.json..."
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add update.json
+          git commit -m "ci: Auto-update update.json to version ${{ env.module_version }}"
+          git push
+
+      # Step 3: Package module files
+      - name: Package Module to install.zip
+        run: |
+          echo "Packaging module..."
+          zip_exclude_args=()
+          if [ -f ".gitignore" ]; then
+            echo "Found .gitignore, adding it to exclusions."
+            zip_exclude_args+=("-x@.gitignore")
+          fi
+          if [ -f ".zipignore" ]; then
+            echo "Found .zipignore, adding it to exclusions."
+            zip_exclude_args+=("-x@.zipignore")
+          fi
+          # Package all module-related files into install.zip
+          echo "Running zip command with exclusions: ${zip_exclude_args[@]}"
+          zip -r install.zip . ${zip_exclude_args[@]}
+
+      # Step 4: Create GitHub Release and upload install.zip
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Use the version from module.prop as the Release tag and title
+          tag_name: ${{ env.module_version }}
+          name: Release ${{ env.module_version }}
+          # Files to upload
+          files: install.zip
+          # Uncomment the line below if you want this to be a draft Release
+          # draft: true
+          # Uncomment the line below if you want this to be a prerelease
+          # prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
