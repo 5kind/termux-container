@@ -1,5 +1,3 @@
-MOUNT_CGROUP_SYSTEMD=true
-
 ln_cg() {
     local src=$1
     local scg="/sys/fs/cgroup/${2}"

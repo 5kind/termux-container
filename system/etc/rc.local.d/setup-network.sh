@@ -1,6 +1,3 @@
-SETUP_NETWORK=true
-MAX_ATTEMPTS=4
-device_interface="wlan0 eth0"
 # container_interface="lxcbr0 docker0"
 
 gateway_check_online() {

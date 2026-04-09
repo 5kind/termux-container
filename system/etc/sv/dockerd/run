@@ -1,0 +1,2 @@
+#!/system/bin/sh
+"PATH=$PATH /data/data/com.termux/files/usr/bin/dockerd 2>&1"

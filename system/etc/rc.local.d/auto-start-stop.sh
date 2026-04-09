@@ -1,9 +1,3 @@
-AUTO_START_STOP=false   # No auto start/stop android
-SLEEP_TIME=600
-MAX_ATTEMPTS=4
-ONLINE_WEBSITES="www.google.com
-www.baidu.com
-www.example.com"
 start_stop_functions() {
     # Set which functions to start/stop android
     # Stop android to reduce power consumption
