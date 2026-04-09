@@ -1,6 +1,8 @@
 #!/system/bin/sh
+[ -r conf ] && . ./conf
+
 [ -x $PREFIX/libexec/lxc/lxc-containers ] && \
 $PREFIX/libexec/lxc/lxc-containers start
 
 echo "LXC containers started. Monitoring events..."
-exec lxc-monitor '.*' --logpriority=info
+exec lxc-monitor '.*' --logpriority=$LOGPRIORITY 2>&1

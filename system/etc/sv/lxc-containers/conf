@@ -1,0 +1,4 @@
+. /etc/rc.conf
+
+PREFIX=/data/data/com.termux/files/usr
+LOGPRIORITY=info
