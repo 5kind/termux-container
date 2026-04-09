@@ -1,4 +1,5 @@
-name: Build Magisk Module
+# .github/workflows/build-magisk-module.yml
+name: Build and Release Magisk Module
 
 on:
   push:
@@ -15,98 +16,216 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Set up the environment
-      - name: Checkout repository
+      # Step 1: Checkout repository with full history
+      - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          # Full history is needed for accurate commit counting
+          fetch-depth: 0
 
-      # Step 2: Validate version info
-      - name: Validate and Auto-Update update.json
-        id: update_json
+      # Step 2: Initialize project if it's new
+      - name: Initialize Project (if needed)
+        id: init_check
         run: |
-          echo "Validating versions and update.json..."
+          repo_owner="${{ github.repository_owner }}"
+          repo_name=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          # Generates a user-friendly name from the repo name, e.g., "my-cool-module" -> "My Cool Module"
+          title_name=$(echo "$repo_name" | sed -e 's/[-_]/ /g' -e 's/\b\(.\)/\u\1/g')
           
+          # New validation logic: Check content of module.prop if it exists
+          needs_initialization="true"
+          if [ -f "module.prop" ]; then
+            echo "::notice::Found module.prop. Validating its content..."
+            # Read id and name from module.prop, trimming any whitespace
+            prop_id=$(grep '^id=' module.prop | cut -d'=' -f2 | tr -d '[:space:]')
+            prop_name=$(grep '^name=' module.prop | cut -d'=' -f2 | tr -d '[:space:]')
+            
+            echo "Repo Name: $repo_name"
+            echo "Title Name: $title_name"
+            echo "Prop ID: $prop_id"
+            echo "Prop Name: $prop_name"
+            
+            # If the ID matches the repo name OR the name matches the title name, we consider it initialized.
+            if [ "$prop_id" = "$repo_name" ] || [ "$prop_name" = "$title_name" ]; then
+              echo "::notice::Project appears to be already initialized based on module.prop content. Skipping setup."
+              needs_initialization="false"
+            else
+              echo "::warning::module.prop content does not match repository. Re-initializing..."
+            fi
+          fi
+
+          if [ "$needs_initialization" = "false" ]; then
+            echo "was_initialized=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # --- Initialization Logic ---
+          echo "::notice::Project not initialized. Starting setup..."
+          echo "was_initialized=true" >> $GITHUB_OUTPUT
+          
+          echo "Initializing project with:"
+          echo "  Owner: $repo_owner"
+          echo "  Repo Name: $repo_name"
+          echo "  Module Name: $title_name"
+
+          # (1) Initialize changelog.md
+          echo "  -> Initializing changelog.md..."
+          cat <<-EOF > changelog.md
+          ### v0.1.0 - $(date +'%Y.%m.%d')
+          * Initial release
+          EOF
+          # (2) Initialize module.prop
+          echo "  -> Initializing module.prop..."
+          cat <<-EOF > module.prop
+          id=$repo_name
+          name=$title_name
+          version=v0.1.0
+          versionCode=1
+          author=$repo_owner
+          description=$title_name
+          updateJson=https://raw.githubusercontent.com/${{ github.repository }}/master/update.json
+          EOF
+          # (3) Initialize update.json
+          echo "  -> Initializing update.json..."
+          jq -n \
+            --arg version "v0.1.0" --argjson code 1 \
+            --arg zipUrl "https://github.com/${{ github.repository }}/releases/download/v0.1.0/install.zip" \
+            --arg changelog "https://raw.githubusercontent.com/${{ github.repository }}/master/changelog.md" \
+            '{version: $version, versionCode: $code, zipUrl: $zipUrl, changelog: $changelog}' > update.json
+            
+          # (4) Initialize README.md
+          echo "  -> Initializing README.md..."
+          if [ -f "README.md" ]; then
+            sed -i "s/$prop_id/$repo_name/g" README.md
+            sed -i "s/$prop_name/$title_name/g" README.md
+          else
+            echo "# $title_name" > README.md
+          fi
+          echo "All metadata files have been initialized."
+
+      # Step 3:  Build Module Binary with Custom Script (if it exists)
+      - name: Build Module (Custom Script)
+        # This step runs only if a commit was made AND the build script exists
+        if: hashFiles('common/build.sh') != ''
+        run: |
+          echo "Found common/build.sh. Running custom build process..."
+          sudo apt-get update
+          sudo apt-get upgrade -y # <your-build-dependencies-here>
+          chmod +x common/build.sh
+          common/build.sh
+
+      # Step 4: Calculate VersionCode
+      # To disable this step, manually change "true" to "false" below.
+      - name: Calculate VersionCode
+        if: steps.init_check.outputs.was_initialized == 'false' && true
+        # Change 'true' to 'false' to disable versionCode calculation ↑
+        run: |
+          echo "Calculating new versionCode from commit count..."
+          # Get current count and add 1
+          commit_count=$(git rev-list --count HEAD)
+          new_version_code=$((commit_count + 1))
+          echo "New versionCode will be: ${new_version_code}"
+          sed -i "s/^versionCode=.*/versionCode=${new_version_code}/" module.prop
+          echo "Updated module.prop with new versionCode."
+
+      # Step 5: Validate Versions and Sync update.json
+      # This step ensures module.prop version >= update.json version and syncs them.
+      - name: Validate Versions and Sync update.json
+        id: validate_and_sync
+        if: steps.init_check.outputs.was_initialized == 'false'
+        run: |
           # Get version info from module.prop
-          prop_version=$(grep 'version=' module.prop | sed 's/.*=//')
-          prop_version_code=$(grep 'versionCode=' module.prop | sed 's/.*=//')
+          echo "Validating versions..."
+          prop_version=$(grep '^version=' module.prop | cut -d'=' -f2)
+          prop_version_code=$(grep '^versionCode=' module.prop | cut -d'=' -f2)
           echo "module.prop: version=${prop_version}, versionCode=${prop_version_code}"
 
-          # Set version and versionCode as environment variables for release creation
-          echo "module_version=${prop_version}" >> $GITHUB_ENV
+          # Set module_version as an output for the release step
+          echo "module_version=${prop_version}" >> $GITHUB_OUTPUT
 
-          # Get version info from update.json, requring jq
-          json_version=$(jq -r '.version' update.json)
-          json_version_code=$(jq -r '.versionCode' update.json)
-          json_zip_url=$(jq -r '.zipUrl' update.json)
-          echo "Current update.json: version=${json_version}, versionCode=${json_version_code}"
+          # If update.json doesn't exist, we can't validate but we need to commit module.prop changes
+          if [ ! -f "update.json" ]; then
+            echo "update.json not found, skipping validation."
+          else
+            # Get version info from update.json
+            json_version_code=$(jq -r '.versionCode' update.json)
+            echo "Current update.json: versionCode=${json_version_code}"
 
-          # Core logic for version comparison
-          # 1. Check if the version in update.json is newer than the one in module.prop
-          if (( json_version_code > prop_version_code )); then
-            echo "::error::Downgrade detected! The versionCode in update.json (${json_version_code}) is newer than in module.prop (${prop_version_code})."
-            echo "::error::Please increment the version in module.prop before proceeding."
-            exit 1
+            # Use version-aware sort to correctly compare versions like v1.10 vs v1.2
+            # This check prevents downgrades.
+            latest_version=$(printf '%s\n' "$prop_version" "$(jq -r '.version' update.json)" | sort -V | tail -n 1)
+            if [[ "$latest_version" != "$prop_version" && "$prop_version_code" -lt "$json_version_code" ]]; then
+              echo "::error::Downgrade detected! The version in update.json is newer."
+              exit 1
+            fi
+
+            # Update update.json if versions or URL are out of sync
+            expected_zip_url="https://github.com/${{ github.repository }}/releases/download/${prop_version}/install.zip"
+            if [[ "$(jq -r '.version' update.json)" != "$prop_version" || "$(jq -r '.versionCode' update.json)" != "$prop_version_code" || "$(jq -r '.zipUrl' update.json)" != "$expected_zip_url" ]]; then
+                echo "Mismatched data detected. Automatically updating update.json..."
+                jq --arg ver "$prop_version" --argjson code "$prop_version_code" --arg url "$expected_zip_url" \
+                   '.version = $ver | .versionCode = $code | .zipUrl = $url' \
+                   update.json > update.json.tmp && mv update.json.tmp update.json
+            fi
           fi
 
-          # 2. Check if the version or Url needs to be updated
-          expected_zip_url="https://github.com/${{ github.repository }}/releases/download/${prop_version}/install.zip"
-          #   - If the version info or URL is different, update update.json
-          if [ "$prop_version" != "$json_version" ] || [ "$prop_version_code" != "$json_version_code" ] || [ "$expected_zip_url" != "$json_zip_url" ]; then
-            echo "Mismatched data detected. Automatically updating update.json..."
-
-            jq \
-              --arg ver "$prop_version" \
-              --argjson code "$prop_version_code" \
-              --arg url "$expected_zip_url" \
-              '.version = $ver | .versionCode = $code | .zipUrl = $url' \
-              update.json > update.json.tmp && mv update.json.tmp update.json
-
-            echo "update.json has been updated to version ${prop_version}."
-            echo "NEEDS_COMMIT=true" >> $GITHUB_ENV
+          # Check if git status has any changes
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "File changes detected. A commit and release are needed."
           else
-            echo "Version validation passed. update.json is already up to date."
+            echo "No file changes detected. Nothing to do."
           fi
       
-      # Step 2.5: commit changes to update.json if needed
-      - name: Commit and Push update.json Changes
-        # Only run this step when NEEDS_COMMIT is set by the previous step
-        if: env.NEEDS_COMMIT == 'true'
+      # Step 6: Commit updated files
+      - name: Commit Changes
         run: |
-          echo "Committing changes in update.json..."
+          # Here we check for file changes directly inside the script
+          if [[ -z $(git status --porcelain) ]]; then
+            echo "No file changes to commit. Skipping."
+            exit 0 # Exit gracefully
+          fi
+
+          echo "File changes detected. Proceeding with commit and push..."
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add update.json
-          git commit -m "ci: Auto-update update.json to version ${{ env.module_version }}"
+          git add -A # Add all new and modified files
+
+          # Create a smart commit message
+          if [[ "${{ steps.init_check.outputs.was_initialized }}" == "true" ]]; then
+            COMMIT_MSG="ci: Initialize project"
+          else
+              COMMIT_MSG="ci: Update version to ${{ steps.validate_and_sync.outputs.module_version }}"
+          fi
+          
+          git commit -m "$COMMIT_MSG"
           git push
 
-      # Step 3: Package module files
+      # Step 7: Package module files
       - name: Package Module to install.zip
+        if: steps.init_check.outputs.was_initialized == 'false'
         run: |
           echo "Packaging module..."
           zip_exclude_args=()
-          if [ -f ".gitignore" ]; then
-            echo "Found .gitignore, adding it to exclusions."
-            zip_exclude_args+=("-x@.gitignore")
-          fi
-          if [ -f ".zipignore" ]; then
-            echo "Found .zipignore, adding it to exclusions."
-            zip_exclude_args+=("-x@.zipignore")
-          fi
+          if [ -f ".gitignore" ]; then zip_exclude_args+=("-x@.gitignore"); fi
+          if [ -f ".zipignore" ]; then zip_exclude_args+=("-x@.zipignore"); fi
           # Package all module-related files into install.zip
           echo "Running zip command with exclusions: ${zip_exclude_args[@]}"
-          zip -r install.zip . ${zip_exclude_args[@]}
+          zip -r -y install.zip . ${zip_exclude_args[@]}
 
-      # Step 4: Create GitHub Release and upload install.zip
+      # Step 8: Create GitHub Release and upload install.zip
       - name: Create GitHub Release
+        if: steps.init_check.outputs.was_initialized == 'false'
         uses: softprops/action-gh-release@v2
         with:
           # Use the version from module.prop as the Release tag and title
-          tag_name: ${{ env.module_version }}
-          name: Release ${{ env.module_version }}
+          tag_name: ${{ steps.validate_and_sync.outputs.module_version }}
+          name: Release ${{ steps.validate_and_sync.outputs.module_version }}
           # Files to upload
           files: install.zip
           # Uncomment the line below if you want this to be a draft Release
           # draft: true
           # Uncomment the line below if you want this to be a prerelease
           # prerelease: false
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,3 +1,6 @@
+### v2.0 - 2026.04.09
+* BREAKING CHANGE: Use termux-services as service manager.
+
 ### v1.5 - 2024.12.25
 * More customize options for service scripts;
 * start-lxc/docker -> start-container;

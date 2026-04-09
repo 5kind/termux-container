@@ -1,6 +1,6 @@
 id=termux-container
 name=Termux Container Service
-version=v1.5.1
+version=v2.0.0
 versionCode=10501
 author=5kind
 description=Mount Cgroup and Run Termux LXC & Docker
