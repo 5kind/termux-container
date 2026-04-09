@@ -48,4 +48,4 @@ setup_cg() {
     mount -o remount,ro /sys/fs/cgroup
 }
 # main
-[ $(stat -f -c %T /sys/fs/cgroup) != "cgroup2fs" ] && setup_cg
+[ "$($PREFIX/bin/stat -f -c %T /sys/fs/cgroup)" != "cgroup2fs" ] && setup_cg
