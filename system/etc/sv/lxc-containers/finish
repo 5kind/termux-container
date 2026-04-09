@@ -1,0 +1,2 @@
+#!/system/bin/sh
+$PREFIX/libexec/lxc/lxc-containers stop
