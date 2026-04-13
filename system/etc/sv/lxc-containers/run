@@ -5,4 +5,4 @@
 $PREFIX/libexec/lxc/lxc-containers start
 
 echo "LXC containers started. Monitoring events..."
-exec lxc-monitor '.*' --logpriority=$LOGPRIORITY 2>&1
+exec lxc-monitor --logpriority=$LOGPRIORITY 2>&1
