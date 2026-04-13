@@ -1,6 +1,6 @@
 {
-  "version": "v2.0.1",
-  "versionCode": 36,
-  "zipUrl": "https://github.com/5kind/termux-container/releases/download/v2.0.1/install.zip",
+  "version": "v2.0.2",
+  "versionCode": 38,
+  "zipUrl": "https://github.com/5kind/termux-container/releases/download/v2.0.2/install.zip",
   "changelog": "https://raw.githubusercontent.com/5kind/termux-container/master/changelog.md"
 }
