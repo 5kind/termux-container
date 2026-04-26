@@ -41,11 +41,11 @@ setup_cg() {
     for cg in blkio cpu cpuacct cpuset devices freezer memory pids schedtune; do
         mount_cg ${cg} ${cg}
     done
-    # mount systemd cgroup
-    $MOUNT_CGROUP_SYSTEMD && 
-    mount_cg systemd "none,nosuid,nodev,noexec,relatime,xattr,name=systemd"
     # make cgroup read-only
     mount -o remount,ro /sys/fs/cgroup
 }
 # main
 [ "$($PREFIX/bin/stat -f -c %T /sys/fs/cgroup)" != "cgroup2fs" ] && setup_cg
+# mount systemd cgroup
+$MOUNT_CGROUP_SYSTEMD && 
+mount_cg systemd "none,nosuid,nodev,noexec,relatime,xattr,name=systemd"
